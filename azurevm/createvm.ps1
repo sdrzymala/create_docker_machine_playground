@@ -9,61 +9,87 @@ $VMImage = "UbuntuLTS"
 $VMSize = "Standard_B2s"
 $PortsToOpen = 22,80,3389,8888
 
+$SSHPublicKeyFile = ".ssh/id_rsa.pub"
+$ConfigScriptName = 'configurevm.sh'
+$VMVirtualNetworkName = "myVnet"
+$VMPublicIpAddressName = "myPublicIpAddress"
+$VMSubnetName = "mySubnet"
+$VMSecurityGroupName = "myNetworkSecurityGroup"
+$VMIPAllocationMethod = "Static"
 
-Write-Output "Begin"
+
+Write-Host "Create VM - start" -ForegroundColor Green
 
 
-Write-Output "Login to Azure"
-$currentAccount = Connect-AzAccount
-Write-Output "  * Logged as $($currentAccount.Context.Account)"
+Write-Host "Login to Azure - start" -ForegroundColor Green
+$currentAccountLog = Connect-AzAccount
+Write-Host "Login to Azure - $($currentAccountLog.Context.Account)" -ForegroundColor Green
 
 
 If ($Remove -eq $true)
 {
 
-    Write-Output "Removing resource group"
+    Write-Host "Removing resource group - start" -ForegroundColor Green
     Remove-AzResourceGroup -Name $ResourceGroupName
+    Write-Host "Removing resource group - end" -ForegroundColor Green
 
 }
 elseif ($Remove -eq $false)
 {
 
 
-    Write-Output "Creating resource group"
-    New-AzResourceGroup `
+    Write-Host "Creating resource group - start" -ForegroundColor Green
+    $currentRSGroupLog = New-AzResourceGroup `
         -Name $ResourceGroupName `
         -Location $Location
+    Write-Host "Creating resource group - $($currentRSGroupLog.ProvisioningState)" -ForegroundColor Green
 
 
-    Write-Output "Create virtual machine"
-    New-AzVm `
+    Write-Host "Create virtual machine - start" -ForegroundColor Green
+    $currentVMLog = New-AzVm `
         -ResourceGroupName $ResourceGroupName `
         -Name $VMName `
         -Location $Location `
         -Size $VMSize `
         -Image $VMImage `
-        -VirtualNetworkName "myVnet" `
-        -SubnetName "mySubnet" `
-        -SecurityGroupName "myNetworkSecurityGroup" `
-        -PublicIpAddressName "myPublicIpAddress" `
-        -AllocationMethod "Static" `
+        -VirtualNetworkName $VMVirtualNetworkName `
+        -SubnetName $VMSubnetName `
+        -SecurityGroupName $VMSecurityGroupName `
+        -PublicIpAddressName $VMPublicIpAddressName `
+        -AllocationMethod $VMIPAllocationMethod `
         -OpenPorts $PortsToOpen
+    Write-Host "Create virtual machine - $($currentVMLog.ProvisioningState)" -ForegroundColor Green
 
 
-    Write-Output "Configure VM using script"
-    Invoke-AzVMRunCommand `
+    Write-Host "Get newly created virtual machine - start" -ForegroundColor Green
+    $currentVirtualMachine = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VMName
+    Write-Host "Get newly created virtual machine - $($currentVirtualMachine.ProvisioningState)" -ForegroundColor Green
+
+    Write-Host "Configure VM using script - start" -ForegroundColor Green
+    $configurevmpath = Join-Path $PSScriptRoot $ConfigScriptName
+    $currentConfigLog = Invoke-AzVMRunCommand `
         -ResourceGroupName $ResourceGroupName `
         -Name $VMName `
         -CommandId 'RunShellScript' `
-        -ScriptPath 'configurevm.sh'
+        -ScriptPath $configurevmpath
+    Write-Host "Configure VM using script - $($currentConfigLog.Status)" -ForegroundColor Green
+
+
+    # Configure the SSH key
+    $sshKeyFilePath = Join-Path $env:USERPROFILE $SSHPublicKeyFile
+    $sshPublicKey = Get-Content $sshKeyFilePath
+    Add-AzVMSshPublicKey `
+        -VM $vmconfig `
+        -KeyData $sshPublicKey `
+        -Path "/home/azureuser/.ssh/authorized_keys"
 
     
-    Write-Output "Obtaining IP address"
-    $IPAddress = Get-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name "myPublicIpAddress"
-    Write-Output "  * IP address: $($IPAddress.IpAddress)" 
+    Write-Host "Obtaining IP address - start" -ForegroundColor Green
+    $IPAddress = Get-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name $VMPublicIpAddressName
+    Write-Host "Obtaining IP address - $($IPAddress.IpAddress)" -ForegroundColor Green
 
 
 }
 
 
-Write-Output "End"
+Write-Host "Create VM - end" -ForegroundColor Green

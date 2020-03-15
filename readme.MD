@@ -3,7 +3,7 @@ This is a simple script that will create a brand new VM with ubuntu with Docker 
 
 # Usage
 * Azure Virtual Machine   
-    Create VM in Azure, configure public static IP and SSH
+    Create VM in Azure, configure public static IP and SSH.
    * Create VM   
    `azurevm\createvm.ps1` 
    * Remove VM   
@@ -11,7 +11,7 @@ This is a simple script that will create a brand new VM with ubuntu with Docker 
 * VirtualBox   
     Create VM in local VirtualBOX, configure SSH and Samba
     * Create VM   
-    `virtualbox\createvm.ps1`
+    `.\createvm.ps1`
 
 # Known issues   
 Samba configuration needs to be updated Not working currently...
