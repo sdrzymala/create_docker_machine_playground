@@ -2,12 +2,14 @@ param (
     [switch]$Remove = $false
 )
 
+
 $ResourceGroupName = "rs-sd-ipython-sandbox"
 $VMName = "sd-vm-ipython"
 $Location = "North Europe"
 $VMImage = "UbuntuLTS"
 $VMSize = "Standard_B2s"
 $PortsToOpen = 22,80,3389,8888
+
 
 $SSHPublicKeyFile = ".ssh/id_rsa.pub"
 $ConfigScriptName = 'configurevm.sh'
@@ -65,23 +67,24 @@ elseif ($Remove -eq $false)
     $currentVirtualMachine = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VMName
     Write-Host "Get newly created virtual machine - $($currentVirtualMachine.ProvisioningState)" -ForegroundColor Green
 
+
     Write-Host "Configure VM using script - start" -ForegroundColor Green
     $configurevmpath = Join-Path $PSScriptRoot $ConfigScriptName
     $currentConfigLog = Invoke-AzVMRunCommand `
-        -ResourceGroupName $ResourceGroupName `
-        -Name $VMName `
+        -VM $currentVirtualMachine `
         -CommandId 'RunShellScript' `
         -ScriptPath $configurevmpath
     Write-Host "Configure VM using script - $($currentConfigLog.Status)" -ForegroundColor Green
 
 
-    # Configure the SSH key
+    Write-Host "Configure SSH key - start" -ForegroundColor Green
     $sshKeyFilePath = Join-Path $env:USERPROFILE $SSHPublicKeyFile
     $sshPublicKey = Get-Content $sshKeyFilePath
-    Add-AzVMSshPublicKey `
-        -VM $vmconfig `
+    $currentAddSSHKeyLog = Add-AzVMSshPublicKey `
+        -VM $currentVirtualMachine `
         -KeyData $sshPublicKey `
         -Path "/home/azureuser/.ssh/authorized_keys"
+    Write-Host "Configure SSH key - $($currentAddSSHKeyLog.ProvisioningState)" -ForegroundColor Green
 
     
     Write-Host "Obtaining IP address - start" -ForegroundColor Green

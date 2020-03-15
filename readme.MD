@@ -4,14 +4,21 @@ This is a simple script that will create a brand new VM with ubuntu with Docker 
 # Usage
 * Azure Virtual Machine   
     Create VM in Azure, configure public static IP and SSH.
+   * Prerequsite   
+   `Install-Module -Name Az -AllowClobber`
    * Create VM   
-   `azurevm\createvm.ps1` 
+   `.\azurevm\createvm.ps1`    
+   ![Azure create vm](misc/azure-crete-vm-printscreen1.png)
    * Remove VM   
-   `azurevm\createvm.ps1 -Remove $true`
+   `.\azurevm\createvm.ps1 -Remove $true`
+   ![Azure remove vm](misc/azure-crete-vm-printscreen1.png)
 * VirtualBox   
     Create VM in local VirtualBOX, configure SSH and Samba
     * Create VM   
     `.\createvm.ps1`
 
 # Known issues   
-Samba configuration needs to be updated Not working currently...
+* Azure   
+   * Verify SSH key
+* VirtualBOX   
+   * Samba configuration needs to be updated. Not working currently atm. Permission issue
