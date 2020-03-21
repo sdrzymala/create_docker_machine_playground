@@ -7,10 +7,12 @@ This is a simple script that will create a brand new VM with ubuntu with Docker 
    * Prerequsite   
    `Install-Module -Name Az -AllowClobber`
    * Create VM   
-   `.\azurevm\createvm.ps1`    
+   `.\azurevm\createvm.ps1`   
+   `.\azurevm\createvm.ps1 -ResourceGroupName "rs-sd-ipython-sandbox"` 
    ![Azure create vm](misc/azure-crete-vm-printscreen1.png)
    * Remove VM   
    `.\azurevm\createvm.ps1 -Remove $true`
+   `.\azurevm\createvm.ps1 -ResourceGroupName "rs-sd-ipython-sandbox" -Remove $true`
    ![Azure remove vm](misc/azure-crete-vm-printscreen1.png)
 * VirtualBox   
     Create VM in local VirtualBOX, configure SSH and Samba

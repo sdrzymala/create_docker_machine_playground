@@ -1,23 +1,21 @@
 param (
-    [switch]$Remove = $false
+    [Parameter(Mandatory=$false)][switch]$Remove=$false,
+
+    [Parameter(Mandatory=$false)][String]$ResourceGroupName = "rs-sd-ipython-sandbox",
+    [Parameter(Mandatory=$false)][String]$VMName = "sd-vm-ipython",
+    [Parameter(Mandatory=$false)][String]$Location = "North Europe",
+    [Parameter(Mandatory=$false)][String]$VMImage = "UbuntuLTS",
+    [Parameter(Mandatory=$false)][String]$VMSize = "Standard_B2s",
+    [Parameter(Mandatory=$false)][String]$PortsToOpen = "22,80,3389,8888",
+
+    [Parameter(Mandatory=$false)][String]$SSHPublicKeyFile = ".ssh/id_rsa.pub",
+    [Parameter(Mandatory=$false)][String]$ConfigScriptName = 'configurevm.sh',
+    [Parameter(Mandatory=$false)][String]$VMVirtualNetworkName = "myVnet",
+    [Parameter(Mandatory=$false)][String]$VMPublicIpAddressName = "myPublicIpAddress",
+    [Parameter(Mandatory=$false)][String]$VMSubnetName = "mySubnet",
+    [Parameter(Mandatory=$false)][String]$VMSecurityGroupName = "myNetworkSecurityGroup",
+    [Parameter(Mandatory=$false)][String]$VMIPAllocationMethod = "Static"
 )
-
-
-$ResourceGroupName = "rs-sd-ipython-sandbox"
-$VMName = "sd-vm-ipython"
-$Location = "North Europe"
-$VMImage = "UbuntuLTS"
-$VMSize = "Standard_B2s"
-$PortsToOpen = 22,80,3389,8888
-
-
-$SSHPublicKeyFile = ".ssh/id_rsa.pub"
-$ConfigScriptName = 'configurevm.sh'
-$VMVirtualNetworkName = "myVnet"
-$VMPublicIpAddressName = "myPublicIpAddress"
-$VMSubnetName = "mySubnet"
-$VMSecurityGroupName = "myNetworkSecurityGroup"
-$VMIPAllocationMethod = "Static"
 
 
 Write-Host "Create VM - start" -ForegroundColor Green
@@ -59,7 +57,7 @@ elseif ($Remove -eq $false)
         -SecurityGroupName $VMSecurityGroupName `
         -PublicIpAddressName $VMPublicIpAddressName `
         -AllocationMethod $VMIPAllocationMethod `
-        -OpenPorts $PortsToOpen
+        -OpenPorts $PortsToOpen.Split(",")
     Write-Host "Create virtual machine - $($currentVMLog.ProvisioningState)" -ForegroundColor Green
 
 
