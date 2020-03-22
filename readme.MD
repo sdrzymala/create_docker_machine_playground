@@ -17,7 +17,7 @@ This is a simple script that will create a brand new VM with ubuntu with Docker 
 * VirtualBox   
     Create VM in local VirtualBOX, configure SSH and Samba
     * Create VM   
-    `.\createvm.ps1`
+    `.\virtualbox\createvm.ps1`
 
 # Known issues   
 * Azure   

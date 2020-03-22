@@ -1,19 +1,24 @@
 #!/bin/bash
 # Remember that line endings should be LF
 echo "Start config script" && \
+export DEBIAN_FRONTEND=noninteractive && \
+currentusername=$1
 echo "Configure sudo" && \
-echo 'sdrzymala ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo && \
-adduser sdrzymala sudo && \
+echo $currentusername ' ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo && \
+adduser $currentusername sudo && \
 echo "Update ubuntu" && \
 export TERM=xter && \
 echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
 debconf-set-selections encoding.conf && \
 rm encoding.conf && \
 apt-get update -y && \
+#apt-get update -y --fix-missing && \
 #apt-get upgrade -y && \
-#apt full-upgrade -y && \
+#apt-get dist-upgrade -y && \
 echo "Install basic stuff" && \
 apt-get install -y vim && \
+apt-get install -y curl && \
+apt-get install -y id-utils && \
 apt-get install -y net-tools && \
 apt-get install -y python-pip && \
 apt-get install -y openssh-server && \
@@ -49,23 +54,19 @@ bind interfaces only = yes
   force user = nobody
 " >> /etc/samba/smb.conf && \
 mkdir -p /samba/public && \
-chown -R nobody:nogroup /samba/public && \
-chmod -R 0775 /samba/public && \
-# known issue, there is a bug....
-# sumba is not working
-# after repeating the same code manually it works tough...
+groupadd editorial && \
+chgrp editorial /samba/public && \
+chmod -R 770 /samba/public && \
+usermod -aG editorial $currentusername
+smbpasswd -a $currentusername
+smbpasswd -e $currentusername
 touch /samba/public/test.txt && \
 systemctl restart nmbd && \
 echo "Install Docker" && \
-apt-get install -y apt-transport-https && \
-apt-get install -y ca-certificates && \
-apt-get install -y curl && \
-apt-get install -y gnupg-agent && \
-apt-get install -y software-properties-common && \
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-apt-get update && \
-apt-get install -y docker-ce docker-ce-cli containerd.io && \
-pip install docker-compose && \
+curl -fsSL https://get.docker.com -o get-docker.sh && \
+sudo sh get-docker.sh && \
+sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sudo chmod +x /usr/local/bin/docker-compose && \
+usermod -aG docker $currentusername && \
 echo "Finish config script" && \
 exit 0
