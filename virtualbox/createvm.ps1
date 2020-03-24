@@ -29,6 +29,8 @@ $sharedFolderPathOnGuest = "/media/sf_" + $sharedFolderName + "/" + $configScrip
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Specify machine user and pass" -ForegroundColor Green
 $user= read-host "enter username "
 $pass= read-host "enter password " -assecurestring
+$sambauser= read-host "enter samba username "
+$sambapass= read-host "enter samba password " -assecurestring
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Begin virtual machine configuration" -ForegroundColor Green
 $startTime = $(get-date)
@@ -99,9 +101,7 @@ Start-Sleep 60
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Install complete" -ForegroundColor Green
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Run post installation script" -ForegroundColor Green
-# Use the first command to print the output of the configurevm.sh script
-.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user | Tee-Object -Variable ConfigScriptOutput
-#$ConfigScriptOutput = .\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user
+.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambauser $sambapass | Tee-Object -Variable ConfigScriptOutput
 if ([string]($ConfigScriptOutput) -match 'Finish config script$')
 {
     Write-Host "Config script fully completed" -ForegroundColor Green

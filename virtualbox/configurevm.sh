@@ -2,7 +2,9 @@
 # Remember that line endings should be LF
 echo "Start config script" && \
 export DEBIAN_FRONTEND=noninteractive && \
-currentusername=$1
+currentusername=$1 && \
+currentsambausername=$2 && \
+currentsambapass=$3 && \
 echo "Configure sudo" && \
 echo $currentusername ' ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo && \
 adduser $currentusername sudo && \
@@ -57,9 +59,10 @@ mkdir -p /samba/public && \
 groupadd editorial && \
 chgrp editorial /samba/public && \
 chmod -R 770 /samba/public && \
-usermod -aG editorial $currentusername
-smbpasswd -a $currentusername
-smbpasswd -e $currentusername
+useradd $currentsambausername && \
+usermod -aG editorial $currentusername && \
+echo -e $currentsambapass"\n"$currentsambapass | smbpasswd -a $currentsambausername && \
+smbpasswd -e $currentsambausername && \
 touch /samba/public/test.txt && \
 systemctl restart nmbd && \
 echo "Install Docker" && \
