@@ -31,19 +31,15 @@ apt-get install -y python-glade2 && \
 apt-get install -y system-config-samba && \
 mv /etc/samba/smb.conf /etc/samba/smb.conf.bak && \
 echo "
-#============================ Global definition ================================
-
 [global]
-workgroup = WORKGROUP
-server string = Samba Server %v
-netbios name = ubuntu1604
-security = user
-map to guest = bad user
-name resolve order = bcast host
-dns proxy = no
-bind interfaces only = yes
-
-#============================ Share Definitions ============================== 
+  workgroup = WORKGROUP
+  server string = Samba Server %v
+  netbios name = ubuntu1604
+  security = user
+  map to guest = bad user
+  name resolve order = bcast host
+  dns proxy = no
+  bind interfaces only = yes
 
 [Public]
   path = /samba/public

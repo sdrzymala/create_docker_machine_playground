@@ -28,9 +28,15 @@ $sharedFolderPathOnGuest = "/media/sf_" + $sharedFolderName + "/" + $configScrip
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Specify machine user and pass" -ForegroundColor Green
 $user= read-host "enter username "
-$pass= read-host "enter password " -assecurestring
+$passsecure= read-host "enter password " -assecurestring
 $sambauser= read-host "enter samba username "
-$sambapass= read-host "enter samba password " -assecurestring
+$sambapasssecure= read-host "enter samba password " -assecurestring
+
+
+# convert secure pass to string
+$pass = [System.Net.NetworkCredential]::new("", $passsecure).Password
+$sambapass = [System.Net.NetworkCredential]::new("", $sambapasssecure).Password
+
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Begin virtual machine configuration" -ForegroundColor Green
 $startTime = $(get-date)
