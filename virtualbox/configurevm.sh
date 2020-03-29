@@ -23,8 +23,8 @@ apt-get install -y net-tools && \
 apt-get install -y python-pip && \
 apt-get install -y openssh-server && \
 echo "Install Samba" && \
-sudo apt-get install -y samba samba-common python-glade2 system-config-samba && \
-sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak && \
+apt-get install -y samba samba-common python-glade2 system-config-samba && \
+mv /etc/samba/smb.conf /etc/samba/smb.conf.bak && \
 echo "
 [global]
  workgroup = WORKGROUP

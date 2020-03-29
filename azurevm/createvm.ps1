@@ -6,7 +6,7 @@ param (
     [Parameter(Mandatory=$false)][String]$Location = "North Europe",
     [Parameter(Mandatory=$false)][String]$VMImage = "UbuntuLTS",
     [Parameter(Mandatory=$false)][String]$VMSize = "Standard_B2s",
-    [Parameter(Mandatory=$false)][String]$PortsToOpen = "22,80,3389,8888",
+    [Parameter(Mandatory=$false)][String]$PortsToOpen = "22,80,3389,8888,137,138,139,445",
 
     [Parameter(Mandatory=$false)][String]$SSHPublicKeyFile = ".ssh/id_rsa.pub",
     [Parameter(Mandatory=$false)][String]$ConfigScriptName = 'configurevm.sh',
@@ -16,9 +16,6 @@ param (
     [Parameter(Mandatory=$false)][String]$VMSecurityGroupName = "myNetworkSecurityGroup",
     [Parameter(Mandatory=$false)][String]$VMIPAllocationMethod = "Static"
 )
-
-
-Write-Host "Create VM - start" -ForegroundColor Green
 
 
 Write-Host "Login to Azure - start" -ForegroundColor Green
@@ -36,6 +33,13 @@ If ($Remove -eq $true)
 }
 elseif ($Remove -eq $false)
 {
+    Write-Host "Create VM - start" -ForegroundColor Green
+
+
+    Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Specify samba user and pass" -ForegroundColor Green
+    $user= read-host "enter samba username "
+    $sambapasssecure= read-host "enter samba password " -assecurestring
+    $sambapass = [System.Net.NetworkCredential]::new("", $sambapasssecure).Password
 
 
     Write-Host "Creating resource group - start" -ForegroundColor Green
@@ -71,9 +75,9 @@ elseif ($Remove -eq $false)
     $currentConfigLog = Invoke-AzVMRunCommand `
         -VM $currentVirtualMachine `
         -CommandId 'RunShellScript' `
-        -ScriptPath $configurevmpath
+        -ScriptPath $configurevmpath `
+        -Parameter @{"arg1" = $user;"arg2" = $sambapass}
     Write-Host "Configure VM using script - $($currentConfigLog.Status)" -ForegroundColor Green
-
 
     Write-Host "Configure SSH key - start" -ForegroundColor Green
     $sshKeyFilePath = Join-Path $env:USERPROFILE $SSHPublicKeyFile
@@ -90,7 +94,6 @@ elseif ($Remove -eq $false)
     Write-Host "Obtaining IP address - $($IPAddress.IpAddress)" -ForegroundColor Green
 
 
+    Write-Host "Create VM - end" -ForegroundColor Green
 }
 
-
-Write-Host "Create VM - end" -ForegroundColor Green
