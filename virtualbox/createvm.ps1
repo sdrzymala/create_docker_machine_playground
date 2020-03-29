@@ -29,7 +29,6 @@ $sharedFolderPathOnGuest = "/media/sf_" + $sharedFolderName + "/" + $configScrip
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Specify machine user and pass" -ForegroundColor Green
 $user= read-host "enter username "
 $passsecure= read-host "enter password " -assecurestring
-$sambauser= read-host "enter samba username "
 $sambapasssecure= read-host "enter samba password " -assecurestring
 
 
@@ -107,7 +106,7 @@ Start-Sleep 60
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Install complete" -ForegroundColor Green
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Run post installation script" -ForegroundColor Green
-.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambauser $sambapass | Tee-Object -Variable ConfigScriptOutput
+.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambapass | Tee-Object -Variable ConfigScriptOutput
 if ([string]($ConfigScriptOutput) -match 'Finish config script$')
 {
     Write-Host "Config script fully completed" -ForegroundColor Green

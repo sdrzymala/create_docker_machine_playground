@@ -3,8 +3,7 @@
 echo "Start config script" && \
 export DEBIAN_FRONTEND=noninteractive && \
 currentusername=$1 && \
-currentsambausername=$2 && \
-currentsambapass=$3 && \
+currentsambapass=$2 && \
 echo "Configure sudo" && \
 echo $currentusername ' ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo && \
 adduser $currentusername sudo && \
@@ -14,7 +13,6 @@ echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && 
 debconf-set-selections encoding.conf && \
 rm encoding.conf && \
 apt-get update -y && \
-#apt-get update -y --fix-missing && \
 #apt-get upgrade -y && \
 #apt-get dist-upgrade -y && \
 echo "Install basic stuff" && \
@@ -25,47 +23,40 @@ apt-get install -y net-tools && \
 apt-get install -y python-pip && \
 apt-get install -y openssh-server && \
 echo "Install Samba" && \
-apt-get install -y samba && \
-apt-get install -y samba-common && \
-apt-get install -y python-glade2 && \
-apt-get install -y system-config-samba && \
-mv /etc/samba/smb.conf /etc/samba/smb.conf.bak && \
+sudo apt-get install -y samba samba-common python-glade2 system-config-samba && \
+sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak && \
 echo "
 [global]
-  workgroup = WORKGROUP
-  server string = Samba Server %v
-  netbios name = ubuntu1604
-  security = user
-  map to guest = bad user
-  name resolve order = bcast host
-  dns proxy = no
-  bind interfaces only = yes
+ workgroup = WORKGROUP
+ server string = Samba Server %v
+ netbios name = ubuntu
+ security = user
+ map to guest = bad user
+ name resolve order = bcast host
+ wins support = yes
 
-[Public]
-  path = /samba/public
-  writable = yes
-  guest ok = yes
-  guest only = yes
-  read only = no
-  create mode = 0777
-  directory mode = 0777
-  force user = nobody
+[shareddata]
+ path = /shareddata
+ available = yes
+ valid users = @sambausers
+ read only = no
+ browseable = yes
+ public = yes
+ writable = yes
+
 " >> /etc/samba/smb.conf && \
-mkdir -p /samba/public && \
-groupadd editorial && \
-chgrp editorial /samba/public && \
-chmod -R 770 /samba/public && \
-useradd $currentsambausername && \
-usermod -aG editorial $currentusername && \
-echo -e $currentsambapass"\n"$currentsambapass | smbpasswd -a $currentsambausername && \
-smbpasswd -e $currentsambausername && \
-touch /samba/public/test.txt && \
-systemctl restart nmbd && \
+mkdir -p /shareddata && \
+groupadd sambausers && \
+usermod -aG sambausers $currentusername && \
+chgrp sambausers /shareddata && \
+chmod 777 /shareddata && \
+echo -e $currentsambapass"\n"$currentsambapass | smbpasswd -a $currentusername && \
+service smbd restart && \
 echo "Install Docker" && \
 curl -fsSL https://get.docker.com -o get-docker.sh && \
-sudo sh get-docker.sh && \
-sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-sudo chmod +x /usr/local/bin/docker-compose && \
+sh get-docker.sh && \
+curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+chmod a+rx /usr/local/bin/docker-compose && \
 usermod -aG docker $currentusername && \
 echo "Finish config script" && \
 exit 0
