@@ -13,18 +13,22 @@ Param
         [Parameter(Mandatory=$false)][String]$vBoxManagePath="C:\Program Files\Oracle\VirtualBox\"
 )
 
+
 # Copy file to shared folder
 $currentDirectory = (Split-Path -parent $PSCommandPath) 
 $currentConfigScriptPath = $currentDirectory + "\" + $configScriptName
 Copy-Item $currentConfigScriptPath -Destination $sharedFolderPath -force
 
+
 # Convert GB to MB
 $disksize = $diskGB * 1024
 $memory = $RAMGB * 1024
 
+
 # Set up other parameters 
 $mediumPath = $diskPath + $name + ".vdi"
 $sharedFolderPathOnGuest = "/media/sf_" + $sharedFolderName + "/" + $configScriptName
+
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Specify machine user and pass" -ForegroundColor Green
 $user= read-host "enter username "
@@ -40,11 +44,14 @@ $sambapass = [System.Net.NetworkCredential]::new("", $sambapasssecure).Password
 Write-Host (get-date).ToString('y/M/d HH:mm:ss:ms') "Begin virtual machine configuration" -ForegroundColor Green
 $startTime = $(get-date)
 
+
 # Step one create VM
 Set-Location $vBoxManagePath
 
+
 # Register VM
 .\VBoxManage createvm --name "$name" --register
+
 
 # modify the vm ram and network
 .\VBoxManage modifyvm "$name" --memory $memory --acpi on --boot1 dvd --cpus $vcpu
@@ -58,19 +65,24 @@ Set-Location $vBoxManagePath
 .\VBoxManage createhd --filename $mediumPath --size $disksize --format VDI
 .\VBoxManage storagectl "$name" --name "IDE Controller" --add ide
 
+
 # attach storage
 .\VBoxManage storagectl "$name" --add sata --controller IntelAHCI --name "SATA Controller"
 .\VBoxManage storageattach "$name" --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $mediumPath
 
+
 # unattending install aka user name and computer name
-$unattendedConfigLog = .\VBoxManage unattended install "$name" --iso="$isoPath" --user="$user" --password="$pass" --full-user-name="$user" --time-zone="$timezone" --hostname=$name.lab.local --install-additions
+.\VBoxManage unattended install "$name" --iso="$isoPath" --user="$user" --password="$pass" --full-user-name="$user" --time-zone="$timezone" --hostname=$name.lab.local --install-additions
+
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Finish virtual machine configuration" -ForegroundColor Green
+
 
 # start VM
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Start machine" -ForegroundColor Green
 #.\VBoxManage startvm "$name" --type headless
 $startVMLog = .\VBoxManage startvm "$name"
+
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Check installation status" -ForegroundColor Green
 # check if install is complete
@@ -82,13 +94,16 @@ while($currentstatus -notlike "*Value: *")
     $currentstatus = .\VBoxManage guestproperty get $name "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 }
 
+
 # wait additional minute so boot is complete
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Wait additional 60 seconds to finish reboot" -ForegroundColor Green
 Start-Sleep 60
 
+
 # reset / reboot
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Reboot" -ForegroundColor Green
 .\VBoxManage controlvm $name reset
+
 
 # wait till machine will boot again
 $currentstatus = ""
@@ -99,11 +114,14 @@ while($currentstatus -notlike "*Value: *")
     $currentstatus = .\VBoxManage guestproperty get $name "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 }
 
+
 # wait additional minute so boot is complete
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Wait additional 60 seconds to finish reboot" -ForegroundColor Green
 Start-Sleep 60
 
+
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Install complete" -ForegroundColor Green
+
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Run post installation script" -ForegroundColor Green
 .\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambapass | Tee-Object -Variable ConfigScriptOutput
@@ -152,7 +170,3 @@ Set-Location ((get-item $currentDirectory ).parent)
 $elapsedTime = $(get-date) - $StartTime
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Execution time: " $elapsedTime -ForegroundColor Green
 
-
-
-# $currentstatus = .\VBoxManage guestproperty enumerate "mydockermachine"
-# Write-Host ($currentstatus.Split("\n")).Count()
