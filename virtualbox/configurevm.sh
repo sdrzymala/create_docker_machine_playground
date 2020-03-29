@@ -54,8 +54,8 @@ echo -e $currentsambapass"\n"$currentsambapass | smbpasswd -a $currentusername &
 service smbd restart && \
 echo "Install Docker" && \
 curl -fsSL https://get.docker.com -o get-docker.sh && \
-sh get-docker.sh && \
-curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sh get-docker.sh &> /dev/null && \
+curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose &> /dev/null && \
 chmod a+rx /usr/local/bin/docker-compose && \
 usermod -aG docker $currentusername && \
 echo "Finish config script" && \

@@ -18,6 +18,8 @@ Param
 $currentDirectory = (Split-Path -parent $PSCommandPath) 
 $currentConfigScriptPath = $currentDirectory + "\" + $configScriptName
 Copy-Item $currentConfigScriptPath -Destination $sharedFolderPath -force
+Write-Host $currentDirectory
+Write-Host $currentConfigScriptPath
 
 
 # Convert GB to MB
@@ -72,7 +74,7 @@ Set-Location $vBoxManagePath
 
 
 # unattending install aka user name and computer name
-.\VBoxManage unattended install "$name" --iso="$isoPath" --user="$user" --password="$pass" --full-user-name="$user" --time-zone="$timezone" --hostname=$name.lab.local --install-additions
+$unattendedConfigLog = .\VBoxManage unattended install "$name" --iso="$isoPath" --user="$user" --password="$pass" --full-user-name="$user" --time-zone="$timezone" --hostname=$name.lab.local --install-additions
 
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Finish virtual machine configuration" -ForegroundColor Green
@@ -90,7 +92,7 @@ $currentstatus = ""
 while($currentstatus -notlike "*Value: *")
 {
     Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Still installing" -ForegroundColor Green
-    Start-Sleep 60
+    Start-Sleep 120
     $currentstatus = .\VBoxManage guestproperty get $name "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 }
 
@@ -124,7 +126,8 @@ Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Install complete" -ForegroundC
 
 
 Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Run post installation script" -ForegroundColor Green
-.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambapass | Tee-Object -Variable ConfigScriptOutput
+#.\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambapass | Tee-Object -Variable ConfigScriptOutput
+$ConfigScriptOutput = .\VBoxManage guestcontrol $name run --verbose --username root --password $pass --wait-stdout --wait-stderr --quiet --exe "/bin/bash" -- ls/arg0 $sharedFolderPathOnGuest $user $sambapass
 if ([string]($ConfigScriptOutput) -match 'Finish config script$')
 {
     Write-Host "Config script fully completed" -ForegroundColor Green
@@ -163,7 +166,7 @@ Write-Host (get-date).ToString('y/M/d HH:mm:ss') "Installation and configuration
 
 
 # set location back to the script directory
-Set-Location ((get-item $currentDirectory ).parent)
+Set-Location (Split-Path (Split-Path $currentConfigScriptPath -Parent) -Parent)
 
 
 # Report finish and execution time 
