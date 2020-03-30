@@ -10,7 +10,8 @@ Param
         [Parameter(Mandatory=$false)][String]$sharedFolderName="create_docker_machine",
         [Parameter(Mandatory=$false)][String]$configScriptName="configurevm.sh",
         [Parameter(Mandatory=$false)][String]$isoPath="E:\Tools\ubuntu-18.04-desktop-amd64.iso",
-        [Parameter(Mandatory=$false)][String]$vBoxManagePath="C:\Program Files\Oracle\VirtualBox\"
+        [Parameter(Mandatory=$false)][String]$vBoxManagePath="C:\Program Files\Oracle\VirtualBox\",
+        [Parameter(Mandatory=$false)][String]$hostOnlyAdapterName="VirtualBox Host-Only Ethernet Adapter #3"
 )
 
 
@@ -58,7 +59,7 @@ Set-Location $vBoxManagePath
 # modify the vm ram and network
 .\VBoxManage modifyvm "$name" --memory $memory --acpi on --boot1 dvd --cpus $vcpu
 .\VBoxManage modifyvm "$name" --nic1 natnetwork --nat-network1 NatNetwork
-./VBoxManage modifyvm "$name" --nic2 hostonly --hostonlyadapter2 'VirtualBox Host-Only Ethernet Adapter #3'
+./VBoxManage modifyvm "$name" --nic2 hostonly --hostonlyadapter2 $hostOnlyAdapterName
 .\VBoxManage modifyvm "$name" --ostype Ubuntu_64
 .\VBoxManage sharedfolder add "$name" --name $sharedFolderName --hostpath $sharedFolderPath --automount
 
